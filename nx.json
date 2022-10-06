@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "npmScope": "ngngfull",
+  "npmScope": "nx-sb-compo",
   "affected": {
     "defaultBase": "main"
   },
@@ -31,7 +31,12 @@
       "inputs": ["default", "{workspaceRoot}/.eslintrc.json"]
     },
     "build-storybook": {
-      "inputs": ["default", "^production", "{workspaceRoot}/.storybook/**/*"]
+      "inputs": [
+        "default",
+        "^production",
+        "{workspaceRoot}/.storybook/**/*",
+        "{workspaceRoot}/.storybook/**/*"
+      ]
     },
     "e2e": {
       "inputs": ["default", "^production"]
@@ -45,6 +50,8 @@
       "!{projectRoot}/tsconfig.spec.json",
       "!{projectRoot}/jest.config.[jt]s",
       "!{projectRoot}/.eslintrc.json",
+      "!{projectRoot}/.storybook/**/*",
+      "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
       "!{projectRoot}/.storybook/**/*",
       "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)"
     ],
@@ -64,5 +71,6 @@
     "@nrwl/angular:component": {
       "style": "css"
     }
-  }
+  },
+  "defaultProject": "web"
 }
