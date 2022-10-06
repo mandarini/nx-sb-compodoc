@@ -89,7 +89,8 @@
         "port": 4400,
         "configDir": "apps/web/.storybook",
         "browserTarget": "web:build",
-        "compodoc": false
+        "compodoc": true,
+        "compodocArgs": ["-e", "json", "-d", "apps/web"]
       },
       "configurations": {
         "ci": {
@@ -104,7 +105,8 @@
         "outputDir": "dist/storybook/web",
         "configDir": "apps/web/.storybook",
         "browserTarget": "web:build",
-        "compodoc": false
+        "compodoc": true,
+        "compodocArgs": ["-e", "json", "-d", "apps/web"]
       },
       "configurations": {
         "ci": {
