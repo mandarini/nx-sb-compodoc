@@ -1,94 +1,135 @@
+# Enable Compodoc for Storybook on Nx
 
+This is a sample repository showing how you can enable `compodoc` for Storybook on Nx.
 
-# nx-sb-compo
+## Main concepts
 
-This project was generated using [Nx](https://nx.dev).
+- `compodoc` is a documentation generator for Angular applications. You can read more on the [compodoc](https://compodoc.app/) website.
+- `storybook` is a tool for developing UI components in isolation for React, Vue, and Angular. You can read more on the [storybook](https://storybook.js.org/) website.
 
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="450"></p>
+In your Angular applications, you may add comment blocks above your components, directives, and other Angular constructs. These comments are used by `compodoc` to generate documentation for your application.
 
-🔎 **Smart, Fast and Extensible Build System**
+For example:
 
-## Adding capabilities to your workspace
+```
+  /**
+   * What background color to use
+   */
+  @Input()
+  backgroundColor?: string;
+```
 
-Nx supports many plugins which add capabilities for developing different types of applications and different tools.
+This comment block will be used by `compodoc`. The text `What background color to use` will be used as the description for the `backgroundColor` input property.
 
-These capabilities include generating applications, libraries, etc as well as the devtools to test, and build projects as well.
+Storybook for Angular uses `compodoc` to generate documentation for your components. This is a great way to document your components, without needed to make any special customizations, or write too much code.
 
-Below are our core plugins:
+The main things that you need to do are:
 
-- [React](https://reactjs.org)
-  - `npm install --save-dev @nrwl/react`
-- Web (no framework frontends)
-  - `npm install --save-dev @nrwl/web`
-- [Angular](https://angular.io)
-  - `npm install --save-dev @nrwl/angular`
-- [Nest](https://nestjs.com)
-  - `npm install --save-dev @nrwl/nest`
-- [Express](https://expressjs.com)
-  - `npm install --save-dev @nrwl/express`
-- [Node](https://nodejs.org)
-  - `npm install --save-dev @nrwl/node`
+1. Tell Storybook to include the component files in the typescript compilation.
+2. Use `compodoc` to generate a `documentation.json` file
+3. Tell Storybook to use the `documentation.json` file to display the documentation.
 
-There are also many [community plugins](https://nx.dev/community) you could add.
+Let's see how you can do that.
 
-## Generate an application
+Note: This repository consists of an Angular application with Storybook configured and an Angular library with Storybook configured. If you do not know how to set these up, please read about [setting up Storybook for Angular](https://nx.dev/storybook/overview-angular) on the Nx documentation website.
 
-Run `nx g @nrwl/react:app my-app` to generate an application.
+## Steps to set up compodoc
 
-> You can use any of the plugins above to generate applications as well.
+### 1. Install the necessary packages
 
-When using Nx, you can create multiple applications and libraries in the same workspace.
+```bash
+yarn add -D @compodoc/compodoc @storybook/addon-docs
+```
 
-## Generate a library
+or
 
-Run `nx g @nrwl/react:lib my-lib` to generate a library.
+```bash
+npm install --save-dev @compodoc/compodoc @storybook/addon-docs
+```
 
-> You can also use any of the plugins above to generate libraries as well.
+### 2. Include the component files in the typescript compilation
 
-Libraries are shareable across libraries and applications. They can be imported from `@nx-sb-compo/mylib`.
+In your project's `.storybook/tsconfig.json` file, in the `include` array, add the path to the component files (eg. `"../src/**/*.component.ts"`). For example, if you have an application called `web`:
 
-## Development server
+For the file `apps/web/.storybook/tsconfig.json`:
 
-Run `nx serve my-app` for a dev server. Navigate to http://localhost:4200/. The app will automatically reload if you change any of the source files.
+```json
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "emitDecoratorMetadata": true
+  },
+  "files": ["../src/polyfills.ts"],
+  "exclude": ["../**/*.spec.ts"],
+  "include": ["../src/**/*.stories.ts", "../src/**/*.component.ts", "*.js"]
+}
+```
 
-## Code scaffolding
+Important! If you are importing stories from other places, and you want the docs for these stories to be generated, too, you need to add the paths to the other components in the `include` array, as well!
 
-Run `nx g @nrwl/react:component my-component --project=my-app` to generate a new component.
+For example, if your stories import paths look like this:
 
-## Build
+```
+"../../../**/**/src/lib/**/*.stories.ts"
+```
 
-Run `nx build my-app` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+make sure to also include
 
-## Running unit tests
+```
+"../../../**/**/src/lib/**/*.component.ts"
+```
 
-Run `nx test my-app` to execute the unit tests via [Jest](https://jestjs.io).
+for the components to be included in the TypeScript compilation as well.
 
-Run `nx affected:test` to execute the unit tests affected by a change.
+### 3. Enable `compodoc` and configure it
 
-## Running end-to-end tests
+#### a. Set `compodoc: true`
 
-Run `nx e2e my-app` to execute the end-to-end tests via [Cypress](https://www.cypress.io).
+In your project's `project.json` file (eg. `apps/web/project.json`), find the `storybook` and the `build-storybook` targets.
 
-Run `nx affected:e2e` to execute the end-to-end tests affected by a change.
+In the `options` you will see `"compodoc": false`. Change that to `true`.
 
-## Understand your workspace
+#### b. Set the directory
 
-Run `nx graph` to see a diagram of the dependencies of your projects.
+By default, `compodoc` will generate a `documentation.json` file at the root of your workspace. We want to change that, and keep the documentation file project-specific. Of course you can change that later, or as you see fit for your use case. But let's keep it project-specific for now.
 
-## Further help
+In your project's `project.json` file (eg. `apps/web/project.json`), find the `storybook` and the `build-storybook` targets. Below the `"compodoc"` option, create a new option called `"compodocArgs`" which contains the following: `["-e", "json", "-d", "apps/web"]`. This means that the `exportFormat` (`-e`) will be `json` and the `output` directory (`-d`) will be `apps/web` (change that, of course, to the directory of your project).
 
-Visit the [Nx Documentation](https://nx.dev) to learn more.
+Let's see the result for our `web` app, for example:
 
+```json
+    "storybook": {
+      "executor": "@storybook/angular:start-storybook",
+      "options": {
+        "port": 4400,
+        "configDir": "apps/web/.storybook",
+        "browserTarget": "web:build",
+        "compodoc": true,
+        "compodocArgs": ["-e", "json", "-d", "apps/web"]
+      },
+    },
+```
 
+### 4. Let Storybook know of the `documentation.json` file (of the compodoc path)
 
-## ☁ Nx Cloud
+In your project's `.storybook/preview.js` file (for example for your `web` app the path would be `apps/web/.storybook/preview.js`), add the following:
 
-### Distributed Computation Caching & Distributed Task Execution
+```js
+import { setCompodocJson } from '@storybook/addon-docs/angular';
+import docJson from '../documentation.json';
+setCompodocJson(docJson);
+```
 
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-cloud-card.png"></p>
+## Now run Storybook and see the results!
 
-Nx Cloud pairs with Nx in order to enable you to build and test code more rapidly, by up to 10 times. Even teams that are new to Nx can connect to Nx Cloud and start saving time instantly.
+Now you can run Storybook or build Storybook, and documentation will be included!
 
-Teams using Nx gain the advantage of building full-stack applications with their preferred framework alongside Nx’s advanced code generation and project dependency graph, plus a unified experience for both frontend and backend developers.
+```bash
+nx storybook web
+```
 
-Visit [Nx Cloud](https://nx.app/) to learn more.
+and
+
+```bash
+nx build-storybook web
+```
